@@ -172,7 +172,7 @@ class ModelFormSetMixin(FormSetMixin, MultipleObjectMixin):
         Returns the keyword arguments for instantiating the formset.
         """
         kwargs = super(ModelFormSetMixin, self).get_formset_kwargs()
-        kwargs['queryset'] = self.get_queryset()
+        kwargs['queryset'] = self.object_list
         return kwargs
     
     def get_factory_kwargs(self):
