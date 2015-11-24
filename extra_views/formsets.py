@@ -153,19 +153,12 @@ class ModelFormSetMixin(FormSetMixin, MultipleObjectMixin):
         If an object list has been supplied, inject it into the context with the
         supplied context_object_name name.
         """
-        context = {}
-
-        if self.object_list:
-            context['object_list'] = self.object_list
-            context_object_name = self.get_context_object_name(self.object_list)
-            if context_object_name:
-                context[context_object_name] = self.object_list
+        context = {'object_list': self.object_list}
+        context_object_name = self.get_context_object_name(self.object_list)
+        if context_object_name:
+            context[context_object_name] = self.object_list
         context.update(kwargs)
-
-        # MultipleObjectMixin get_context_data() doesn't work when object_list
-        # is not provided in kwargs, so we skip MultipleObjectMixin and call
-        # ContextMixin directly.
-        return ContextMixin.get_context_data(self, **context)
+        return super(ModelFormSetMixin, self).get_context_data(**context)
 
     def get_formset_kwargs(self):
         """
