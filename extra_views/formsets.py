@@ -174,24 +174,34 @@ class ModelFormSetMixin(FormSetMixin, MultipleObjectMixin):
         kwargs = super(ModelFormSetMixin, self).get_formset_kwargs()
         kwargs['queryset'] = self.get_queryset()
         return kwargs
-
+    
     def get_factory_kwargs(self):
         """
         Returns the keyword arguments for calling the formset factory
         """
         kwargs = super(ModelFormSetMixin, self).get_factory_kwargs()
-        if django.VERSION >= (1, 6) and self.fields is None:
-            self.fields = '__all__'  # backward compatible with older versions
+        form_class = self.get_form_class()
+        
+        if django.VERSION >= (1, 6):
+            if self.fields is None and self.exclude is None:
+                if not form_class:
+                    self.fields = '__all__'
+                elif hasattr(form_class.Meta, 'fields'):
+                    self.fields = form_class.Meta.fields
+                else:
+                    # django checks that ModelForm.Meta contains fields or exclude
+                    self.exclude = form_class.Meta.exclude
 
         kwargs.update({
             'exclude': self.exclude,
             'fields': self.fields,
             'formfield_callback': self.formfield_callback,
         })
-        if self.get_form_class():
-            kwargs['form'] = self.get_form_class()
-        if self.get_formset_class():
-            kwargs['formset'] = self.get_formset_class()
+        if form_class:
+            kwargs['form'] = form_class
+        formset_class = self.get_formset_class()
+        if formset_class:
+            kwargs['formset'] = formset_class
         return kwargs
 
     def get_formset(self):
